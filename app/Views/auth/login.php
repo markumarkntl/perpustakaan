@@ -29,16 +29,38 @@
             <p class="auth-subtitle mb-5">Login Untuk Melanjutkan ke Aplikasi</p>
  
 
-            <!-- UBAH KE ROUTE DASHBOARD -->
-            <form action="index.html">
+            <?php if (session()->getFlashdata('error_login')) : ?>
+                <div class="alert alert-danger">
+                    <?= esc(session()->getFlashdata('error_login')) ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if (session()->getFlashdata('errors')) : ?>
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        <?php foreach (session()->getFlashdata('errors') as $error) : ?>
+                            <li><?= esc($error) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
+
+            <?php if (session()->getFlashdata('message')) : ?>
+                <div class="alert alert-success">
+                    <?= esc(session()->getFlashdata('message')) ?>
+                </div>
+            <?php endif; ?>
+
+            <form action="<?= base_url('login') ?>" method="post">
+                <?= csrf_field() ?>
                 <div class="form-group position-relative has-icon-left mb-4">
-                    <input type="text" class="form-control form-control-xl" placeholder="Username">
+                    <input type="text" name="username" value="<?= esc(old('username')) ?>" class="form-control form-control-xl" placeholder="Username" required autofocus>
                     <div class="form-control-icon">
                         <i class="bi bi-person"></i>
                     </div>
                 </div>
                 <div class="form-group position-relative has-icon-left mb-4">
-                    <input type="password" class="form-control form-control-xl" placeholder="Password">
+                    <input type="password" name="password" class="form-control form-control-xl" placeholder="Password" required>
                     <div class="form-control-icon">
                         <i class="bi bi-shield-lock"></i>
                     </div>
@@ -49,7 +71,7 @@
                         Ingat Saya
                     </label>
                 </div>
-                <button class="btn btn-primary btn-block btn-lg shadow-lg mt-5">Login</button>
+                <button type="submit" class="btn btn-primary btn-block btn-lg shadow-lg mt-5">Login</button>
             </form>
             <div class="text-center mt-5 text-lg fs-4">
                 <!-- <p class="text-gray-600">Don't have an account? <a href="auth-register.html" class="font-bold">Sign
@@ -59,7 +81,7 @@
         </div>
     </div>
     <div class="col-lg-7 d-none d-lg-block">
-        <div id="auth-right" style="background: url('assets/compiled/jpg/background-....jpg') no-repeat center center; background-size: cover !important;"> 
+        <div id="auth-right" style="background: url('assets/compiled/jpg/arsitek.jpg') no-repeat center center; background-size: cover !important;"> 
 
         </div>
     </div>
