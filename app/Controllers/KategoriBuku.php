@@ -38,6 +38,7 @@ class KategoriBuku extends BaseController
     {
         $namaKategori = trim((string) $this->request->getPost('nama_kategori'));
 
+        // Gunakan validationRules default di model (is_unique tanpa pengecualian)
         if (! $this->kategoriModel->validate(['nama_kategori' => $namaKategori])) {
             return redirect()->to('/kategori-buku')
                 ->withInput()
@@ -64,13 +65,8 @@ class KategoriBuku extends BaseController
 
         $namaKategori = trim((string) $this->request->getPost('nama_kategori'));
 
-        // Sertakan id_kategori supaya rule is_unique tahu baris mana yang dikecualikan.
-        $dataToValidate = [
-            'id_kategori'   => $id,
-            'nama_kategori' => $namaKategori,
-        ];
-
-        if (! $this->kategoriModel->validate($dataToValidate)) {
+        // Gunakan validateForUpdate() agar is_unique mengecualikan baris ini sendiri
+        if (! $this->kategoriModel->validateForUpdate(['nama_kategori' => $namaKategori], (int) $id)) {
             return redirect()->to('/kategori-buku')
                 ->withInput()
                 ->with('errors', $this->kategoriModel->errors());
@@ -108,4 +104,4 @@ class KategoriBuku extends BaseController
         return redirect()->to('/kategori-buku')
             ->with('message', 'Kategori buku berhasil dihapus.');
     }
-}
+}   
