@@ -15,10 +15,18 @@
                                 <span>Data Master</span>
                             </a>
                             <ul class="submenu">
-                                <li class="submenu-item"><a href="#" class="submenu-link">Kategori Buku</a></li>
-                                <li class="submenu-item"><a href="#" class="submenu-link">Katalog Buku</a></li>
-                                <li class="submenu-item"><a href="#" class="submenu-link">Data Anggota</a></li>
-                                <li class="submenu-item"><a href="#" class="submenu-link">Data Petugas</a></li>
+                                <li class="submenu-item <?= ($activeSub ?? '') === 'kategori-buku' ? 'active' : '' ?>">
+                                    <a href="<?= base_url('kategori-buku') ?>" class="submenu-link">Kategori Buku</a>
+                                </li>
+                                <li class="submenu-item <?= ($activeSub ?? '') === 'katalog-buku' ? 'active' : '' ?>">
+                                    <a href="<?= base_url('katalog-buku') ?>" class="submenu-link">Katalog Buku</a>
+                                </li>
+                                <li class="submenu-item <?= ($activeSub ?? '') === 'data-anggota' ? 'active' : '' ?>">
+                                    <a href="<?= base_url('data-anggota') ?>" class="submenu-link">Data Anggota</a>
+                                </li>
+                               <li class="submenu-item <?= ($activeSub ?? '') === 'petugas' ? 'active' : '' ?>">
+                                    <a href="<?= base_url('petugas') ?>" class="submenu-link">Data Petugas</a>
+                                </li>
                             </ul>
                         </li>
 

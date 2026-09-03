@@ -10,4 +10,9 @@
     <link rel="stylesheet" href="<?= base_url('assets/compiled/css/app.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/compiled/css/app-dark.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/compiled/css/iconly.css') ?>">
+    <?php if (! empty($extraStyles)) : ?>
+        <?php foreach ($extraStyles as $style) : ?>
+            <link rel="stylesheet" href="<?= base_url($style) ?>">
+        <?php endforeach; ?>
+    <?php endif; ?>
 </head>
