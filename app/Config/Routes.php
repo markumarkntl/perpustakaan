@@ -17,7 +17,7 @@ $routes->group('kategori-buku', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'KategoriBuku::index');
     $routes->post('store', 'KategoriBuku::store');
     $routes->post('update/(:num)', 'KategoriBuku::update/$1');
-    $routes->delete('delete/(:num)', 'KategoriBuku::delete/$1');
+    $routes->post('delete/(:num)', 'KategoriBuku::delete/$1');
 });
 
 // Katalog Buku (dilindungi filter auth)

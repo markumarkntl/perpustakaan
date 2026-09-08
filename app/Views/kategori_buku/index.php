@@ -109,81 +109,41 @@ $extraScripts = ['assets/extensions/sweetalert2/sweetalert2.min.js'];
     </div>
 </div>
 
-<!-- Modal Konfirmasi Hapus -->
-<div class="modal fade" id="modalHapusKategori" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Konfirmasi Hapus</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Apakah Anda yakin ingin menghapus kategori <strong id="hapusNamaKategori"></strong>?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-danger" id="konfirmasiHapus">Ya, Hapus</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Form tersembunyi untuk proses hapus -->
+<!-- Form tersembunyi khusus untuk proses hapus (submit via JS setelah konfirmasi SweetAlert2) -->
 <form id="formHapusKategori" method="post" action="" class="d-none">
     <?= csrf_field() ?>
-    <input type="hidden" name="_method" value="DELETE">
-</form> 
+</form>
 
 <script>
-const baseUrlKategoriBuku = "<?= base_url('kategori-buku') ?>";
+    const baseUrlKategoriBuku = "<?= base_url('kategori-buku') ?>";
 
-function bukaModalTambah() {
-    document.getElementById('modalKategoriTitle').innerText = 'Tambah Kategori';
-    document.getElementById('formKategori').action = baseUrlKategoriBuku + '/store';
-    document.getElementById('nama_kategori').value = '';
-    // Reset form validation jika ada
-    document.getElementById('formKategori').querySelector('.is-invalid')?.classList.remove('is-invalid');
-}
-
-function bukaModalEdit(id, namaKategori) {
-    document.getElementById('modalKategoriTitle').innerText = 'Edit Kategori';
-    document.getElementById('formKategori').action = baseUrlKategoriBuku + '/update/' + id;
-    document.getElementById('nama_kategori').value = namaKategori;
-}
-
-// Fungsi hapus dengan Modal Bootstrap
-let hapusId = null;
-
-function hapusKategori(id, namaKategori) {
-    hapusId = id;
-    document.getElementById('hapusNamaKategori').textContent = namaKategori;
-    
-    // Pastikan modal ada dan Bootstrap tersedia
-    const modalElement = document.getElementById('modalHapusKategori');
-    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-        const modal = new bootstrap.Modal(modalElement);
-        modal.show();
-    } else {
-        // Fallback jika Bootstrap belum load
-        alert('Konfirmasi hapus: ' + namaKategori);
+    function bukaModalTambah() {
+        document.getElementById('modalKategoriTitle').innerText = 'Tambah Kategori';
+        document.getElementById('formKategori').action = baseUrlKategoriBuku + '/store';
+        document.getElementById('nama_kategori').value = '';
     }
-}
 
-// Event listener untuk tombol konfirmasi hapus
-document.addEventListener('DOMContentLoaded', function() {
-    const konfirmasiBtn = document.getElementById('konfirmasiHapus');
-    if (konfirmasiBtn) {
-        konfirmasiBtn.addEventListener('click', function() {
-            if (hapusId) {
+    function bukaModalEdit(id, namaKategori) {
+        document.getElementById('modalKategoriTitle').innerText = 'Edit Kategori';
+        document.getElementById('formKategori').action = baseUrlKategoriBuku + '/update/' + id;
+        document.getElementById('nama_kategori').value = namaKategori;
+    }
+
+    function hapusKategori(id, namaKategori) {
+        Swal.fire({
+            title: 'Hapus kategori?',
+            text: 'Kategori "' + namaKategori + '" akan dihapus permanen.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, hapus',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#d33',
+        }).then((result) => {
+            if (result.isConfirmed) {
                 const form = document.getElementById('formHapusKategori');
-                if (form) {
-                    form.action = baseUrlKategoriBuku + '/delete/' + hapusId;
-                    form.submit();
-                } else {
-                    console.error('Form hapus tidak ditemukan!');
-                }
+                form.action = baseUrlKategoriBuku + '/delete/' + id;
+                form.submit();
             }
         });
     }
-});
 </script>
