@@ -22,6 +22,9 @@ class KatalogBuku extends BaseController
             'nama_petugas' => session()->get('nama_petugas'),
             'bukuList'     => $this->bukuModel->getAllWithKategori(),
             'kategoriList' => $this->kategoriModel->orderBy('nama_kategori', 'ASC')->findAll(),
+
+            'extraStyles'  => ['assets/extensions/sweetalert2/sweetalert2.min.css'],
+            'extraScripts' => ['assets/extensions/sweetalert2/sweetalert2.min.js'],
         ];
 
         $data['content']    = view('katalog_buku/index', $data);

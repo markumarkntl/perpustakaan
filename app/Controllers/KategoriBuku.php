@@ -21,6 +21,9 @@ class KategoriBuku extends BaseController
         $data = [
             'nama_petugas' => session()->get('nama_petugas'),
             'kategoriList' => $this->kategoriModel->orderBy('nama_kategori', 'ASC')->findAll(),
+    
+            'extraStyles'  => ['assets/extensions/sweetalert2/sweetalert2.min.css'],
+            'extraScripts' => ['assets/extensions/sweetalert2/sweetalert2.min.js'],
         ];
 
         $data['content']    = view('kategori_buku/index', $data);

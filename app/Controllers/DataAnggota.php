@@ -18,6 +18,9 @@ class DataAnggota extends BaseController
         $data = [
             'nama_petugas' => session()->get('nama_petugas'),
             'anggotaList'  => $this->anggotaModel->orderBy('nama', 'ASC')->findAll(),
+
+             'extraStyles' => ['assets/extensions/sweetalert2/sweetalert2.min.css'],
+            'extraScripts' => ['assets/extensions/sweetalert2/sweetalert2.min.js'],
         ];
 
         $data['content']    = view('data_anggota/index', $data);

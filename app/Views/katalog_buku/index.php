@@ -2,8 +2,7 @@
 /** @var array $bukuList */
 /** @var array $kategoriList */
 
-$extraStyles  = ['assets/extensions/sweetalert2/sweetalert2.min.css'];
-$extraScripts = ['assets/extensions/sweetalert2/sweetalert2.min.js'];
+
 ?>
 
 <?php if (session()->getFlashdata('message')) : ?>
