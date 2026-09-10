@@ -22,6 +22,8 @@ class KategoriBukuModel extends Model
 
     // Validation
     protected $validationRules = [
+        
+        'id_kategori'   => 'permit_empty|is_natural_no_zero', // ternyata ini loh rek
         'nama_kategori' => 'required|max_length[100]|is_unique[kategori_buku.nama_kategori,id_kategori,{id_kategori}]',
     ];
     protected $validationMessages = [

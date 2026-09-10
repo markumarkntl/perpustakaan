@@ -66,7 +66,15 @@ class DataAnggota extends BaseController
         }
 
         unset($payload['id_anggota']);
-        $this->anggotaModel->update($id, $payload);
+
+        // Validasi sudah dilakukan manual di atas (dengan id_anggota
+        // disertakan supaya placeholder {id_anggota} pada rule nis terisi
+        // benar). skipValidation(true) WAJIB di sini, karena Model::update()
+        // akan menjalankan validate() lagi secara internal memakai $payload
+        // yang sudah tidak berisi id_anggota, sehingga placeholder-nya
+        // gagal ter-replace dan is_unique salah menganggap baris yang
+        // sedang diedit sebagai duplikat NIS.
+        $this->anggotaModel->skipValidation(true)->update($id, $payload);
 
         return redirect()->to('/data-anggota')
             ->with('message', 'Data anggota berhasil diperbarui.');

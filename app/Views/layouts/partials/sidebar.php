@@ -47,7 +47,7 @@
                                 <span>Laporan</span>
                             </a>
                             <ul class="submenu">
-                                <li class="submenu-item"><a href="#" class="submenu-link">Riwayat Peminjaman</a></li>
+                                <li class="submenu-item"><a href="#" class="submenu-link">Riwayat Pinjaman</a></li>
                                 <li class="submenu-item"><a href="#" class="submenu-link">Laporan Denda</a></li>
                             </ul>
                         </li>

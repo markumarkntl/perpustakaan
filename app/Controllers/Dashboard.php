@@ -14,6 +14,9 @@ class Dashboard extends BaseController
             'total_judul'    => $db->table('buku')->countAllResults(),
             'total_anggota'  => $db->table('anggota')->countAllResults(),
             'total_dipinjam' => $db->table('peminjaman')->where('status', 'dipinjam')->countAllResults(),
+
+            // FontAwesome dipakai khusus di halaman dashboard untuk icon stat card.
+            'extraStyles' => ['assets/extensions/@fortawesome/fontawesome-free/css/all.min.css'],
         ];
 
         // Render konten halaman dashboard terlebih dahulu,

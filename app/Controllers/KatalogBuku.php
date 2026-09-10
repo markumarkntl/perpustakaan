@@ -70,7 +70,15 @@ class KatalogBuku extends BaseController
         }
 
         unset($payload['id_buku']);
-        $this->bukuModel->update($id, $payload);
+
+        // Validasi sudah dilakukan manual di atas (dengan id_buku disertakan
+        // supaya placeholder {id_buku} pada rule kode_buku terisi benar).
+        // skipValidation(true) WAJIB di sini, karena Model::update() akan
+        // menjalankan validate() lagi secara internal memakai $payload yang
+        // sudah tidak berisi id_buku, sehingga placeholder-nya gagal
+        // ter-replace dan is_unique salah menganggap baris yang sedang
+        // diedit sebagai duplikat kode_buku.
+        $this->bukuModel->skipValidation(true)->update($id, $payload);
 
         return redirect()->to('/katalog-buku')
             ->with('message', 'Buku berhasil diperbarui.');

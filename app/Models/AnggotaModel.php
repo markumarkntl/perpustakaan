@@ -24,6 +24,9 @@ class AnggotaModel extends Model
     protected $useTimestamps = false;
 
     protected $validationRules = [
+        // id_anggota wajib punya rule sendiri karena dipakai sebagai
+        // placeholder {id_anggota} di rule nis di bawah ini.
+        'id_anggota' => 'permit_empty|is_natural_no_zero',
         'nis'   => 'required|max_length[20]|is_unique[anggota.nis,id_anggota,{id_anggota}]',
         'nama'  => 'required|max_length[120]',
         'kelas' => 'required|max_length[20]',

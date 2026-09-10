@@ -26,6 +26,9 @@ class BukuModel extends Model
     protected $useTimestamps = false;
 
     protected $validationRules = [
+        // id_buku wajib punya rule sendiri karena dipakai sebagai
+        // placeholder {id_buku} di rule kode_buku di bawah ini.
+        'id_buku'      => 'permit_empty|is_natural_no_zero',
         'kode_buku'    => 'required|max_length[20]|is_unique[buku.kode_buku,id_buku,{id_buku}]',
         'judul'        => 'required|max_length[150]',
         'penulis'      => 'required|max_length[100]',

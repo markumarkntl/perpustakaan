@@ -79,7 +79,14 @@ class KategoriBuku extends BaseController
                 ->with('errors', $this->kategoriModel->errors());
         }
 
-        $this->kategoriModel->update($id, ['nama_kategori' => $namaKategori]);
+        // Validasi sudah dilakukan manual di atas (dengan id_kategori disertakan
+        // supaya placeholder {id_kategori} pada rule is_unique terisi benar).
+        // skipValidation(true) di sini WAJIB, karena Model::update() akan
+        // menjalankan validate() lagi secara internal memakai $data yang
+        // dikirim ke update() — dan array itu tidak berisi id_kategori,
+        // sehingga placeholder-nya gagal ter-replace dan is_unique salah
+        // menganggap baris yang sedang diedit sebagai duplikat.
+        $this->kategoriModel->skipValidation(true)->update($id, ['nama_kategori' => $namaKategori]);
 
         return redirect()->to('/kategori-buku')
             ->with('message', 'Kategori buku berhasil diperbarui.');
