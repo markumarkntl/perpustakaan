@@ -36,6 +36,14 @@ $routes->group('data-anggota', ['filter' => 'auth'], function ($routes) {
     $routes->post('delete/(:num)', 'DataAnggota::delete/$1');
 });
 
+// Transaksi Peminjaman & Pengembalian (dilindungi filter auth)
+$routes->group('peminjaman', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'Peminjaman::index');
+    $routes->post('store', 'Peminjaman::store');
+    $routes->post('kembalikan/(:num)', 'Peminjaman::kembalikan/$1');
+    $routes->post('kembalikan-semua/(:num)', 'Peminjaman::kembalikanSemua/$1');
+});
+
 // Data Petugas (dilindungi filter auth)
 $routes->get('/petugas', 'Petugas::index', ['filter' => 'auth']);
 $routes->post('/petugas/store', 'Petugas::store', ['filter' => 'auth']);
