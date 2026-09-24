@@ -78,6 +78,23 @@ class PeminjamanModel extends Model
     }
 
     /**
+     * Ambil semua transaksi peminjaman yang statusnya masih 'dipinjam'
+     * (belum selesai / masih ada buku yang belum kembali), beserta
+     * relasi anggota & petugas. Diurutkan berdasarkan tanggal jatuh
+     * tempo terdekat agar transaksi yang berisiko telat tampil di atas.
+     * Dipakai sebagai data utama menu Pengembalian.
+     */
+    public function getBelumSelesaiWithRelasi(): array
+    {
+        return $this->select('peminjaman.*, anggota.nama AS nama_anggota, anggota.kelas, petugas.nama_petugas')
+            ->join('anggota', 'anggota.id_anggota = peminjaman.id_anggota')
+            ->join('petugas', 'petugas.id_petugas = peminjaman.id_petugas')
+            ->where('peminjaman.status', 'dipinjam')
+            ->orderBy('peminjaman.tanggal_jatuh_tempo', 'ASC')
+            ->findAll();
+    }
+
+    /**
      * Cek apakah semua item buku pada transaksi ini sudah dikembalikan
      * (tanggal_kembali di detail_peminjaman sudah terisi semua).
      * Dipakai untuk menentukan kapan status peminjaman berubah jadi 'selesai'.

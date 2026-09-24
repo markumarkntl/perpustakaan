@@ -38,8 +38,8 @@ class DetailPeminjamanModel extends Model
             'is_not_unique' => 'Buku yang dipilih tidak valid.',
         ],
         'jumlah' => [
-            'required'         => 'Jumlah buku wajib diisi.',
-            'is_natural_no_zero' => 'Jumlah buku minimal 1.',
+            'required'            => 'Jumlah buku wajib diisi.',
+            'is_natural_no_zero'  => 'Jumlah buku minimal 1.',
         ],
     ];
     protected $skipValidation       = false;
@@ -58,6 +58,21 @@ class DetailPeminjamanModel extends Model
         return $this->select('detail_peminjaman.*, buku.judul, buku.kode_buku')
             ->join('buku', 'buku.id_buku = detail_peminjaman.id_buku')
             ->where('detail_peminjaman.id_peminjaman', $idPeminjaman)
+            ->findAll();
+    }
+
+    /**
+     * Ambil item-item buku yang BELUM dikembalikan (tanggal_kembali
+     * masih kosong) dari satu transaksi peminjaman. Dipakai di menu
+     * Pengembalian untuk menampilkan buku mana saja yang masih bisa
+     * diproses pengembaliannya pada satu transaksi.
+     */
+    public function getBelumKembaliByPeminjaman(int $idPeminjaman): array
+    {
+        return $this->select('detail_peminjaman.*, buku.judul, buku.kode_buku')
+            ->join('buku', 'buku.id_buku = detail_peminjaman.id_buku')
+            ->where('detail_peminjaman.id_peminjaman', $idPeminjaman)
+            ->where('detail_peminjaman.tanggal_kembali', null)
             ->findAll();
     }
 

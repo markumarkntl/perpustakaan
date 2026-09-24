@@ -36,8 +36,12 @@
                                 <span>Transaksi</span>
                             </a>
                             <ul class="submenu">
-                                <li class="submenu-item"><a href="#" class="submenu-link">Peminjaman Buku</a></li>
-                                <li class="submenu-item"><a href="#" class="submenu-link">Pengembalian Buku</a></li>
+                                <li class="submenu-item <?= ($activeSub ?? '') === 'peminjaman' ? 'active' : '' ?>">
+                                <a href="<?= base_url('peminjaman') ?>" class="submenu-link">Peminjaman Buku</a>
+                                </li>
+                                 <li class="submenu-item <?= ($activeSub ?? '') === 'pengembalian' ? 'active' : '' ?>">
+                                <a href="<?= base_url('pengembalian') ?>" class="submenu-link">Pengembalian Buku</a>
+                                </li>
                             </ul>
                         </li>
 

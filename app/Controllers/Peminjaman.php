@@ -88,8 +88,15 @@ class Peminjaman extends BaseController
         $idBukuList = (array) $this->request->getPost('id_buku');
         $jumlahList = (array) $this->request->getPost('jumlah');
 
+        // DEBUG: lihat persis apa yang dikirim browser.
+        log_message('debug', 'Peminjaman::store() RAW id_buku[] = ' . json_encode($idBukuList));
+        log_message('debug', 'Peminjaman::store() RAW jumlah[]  = ' . json_encode($jumlahList));
+
         // Rapikan input: buang baris kosong, gabungkan buku yang sama.
         $items = $this->rapikanItemBuku($idBukuList, $jumlahList);
+
+        // DEBUG: lihat hasil setelah dirapikan (ini yang benar-benar akan diproses).
+        log_message('debug', 'Peminjaman::store() items setelah dirapikan = ' . json_encode($items));
 
         if (empty($items)) {
             return redirect()->to('/peminjaman')
@@ -122,9 +129,15 @@ class Peminjaman extends BaseController
             $this->bukuModel->where('id_buku', $item['id_buku'])
                 ->set('stok', 'stok - ' . $item['jumlah'], false)
                 ->update();
+
+            // DEBUG: konfirmasi query pengurangan stok benar-benar jalan.
+            log_message('debug', "Peminjaman::store() stok id_buku={$item['id_buku']} dikurangi {$item['jumlah']}, DB error: " . json_encode($this->bukuModel->db->error()));
         }
 
         $db->transComplete();
+
+        // DEBUG: status akhir transaksi.
+        log_message('debug', 'Peminjaman::store() transStatus = ' . json_encode($db->transStatus()) . ', idPeminjaman = ' . $idPeminjaman);
 
         if ($db->transStatus() === false) {
             return redirect()->to('/peminjaman')
@@ -184,129 +197,4 @@ class Peminjaman extends BaseController
 
         return null;
     }
-
-        /**
-     * Proses pengembalian SATU item buku dari sebuah transaksi peminjaman.
-     * - Menghitung denda otomatis jika telat dari tanggal_jatuh_tempo.
-     * - Mengembalikan stok buku sesuai jumlah yang dipinjam.
-     * - Jika seluruh item pada transaksi sudah kembali, status
-     *   peminjaman otomatis diubah menjadi 'selesai'.
-     *
-     * Input opsional: tanggal_kembali (default: hari ini).
-     */
-    public function kembalikan($idDetail = null)
-    {
-        $detail = $this->detailModel->getOneWithRelasi((int) $idDetail);
-
-        if (! $detail) {
-            return redirect()->to('/peminjaman')
-                ->with('error', 'Data peminjaman buku tidak ditemukan.');
-        }
-
-        if (! empty($detail['tanggal_kembali'])) {
-            return redirect()->to('/peminjaman')
-                ->with('error', "Buku \"{$detail['judul']}\" sudah tercatat dikembalikan sebelumnya.");
-        }
-
-        $tanggalKembali = trim((string) $this->request->getPost('tanggal_kembali'));
-        $tanggalKembali = $tanggalKembali !== '' ? $tanggalKembali : date('Y-m-d');
-
-        $denda = $this->detailModel->hitungDenda($detail['tanggal_jatuh_tempo'], $tanggalKembali);
-
-        $db = \Config\Database::connect();
-        $db->transStart();
-
-        $this->detailModel->update($detail['id_detail'], [
-            'tanggal_kembali' => $tanggalKembali,
-            'denda'           => $denda,
-        ]);
-
-        // Kembalikan stok buku sesuai jumlah yang dipinjam pada item ini.
-        $this->bukuModel->where('id_buku', $detail['id_buku'])
-            ->set('stok', 'stok + ' . (int) $detail['jumlah'], false)
-            ->update();
-
-        // Jika seluruh item pada transaksi ini sudah kembali, tutup transaksinya.
-        if ($this->peminjamanModel->semuaDetailSudahKembali((int) $detail['id_peminjaman'])) {
-            $this->peminjamanModel->update($detail['id_peminjaman'], ['status' => 'selesai']);
-        }
-
-        $db->transComplete();
-
-        if ($db->transStatus() === false) {
-            return redirect()->to('/peminjaman')
-                ->with('error', 'Proses pengembalian gagal, silakan coba lagi.');
-        }
-
-        $pesan = $denda > 0
-            ? "Buku \"{$detail['judul']}\" berhasil dikembalikan. Denda keterlambatan: Rp " . number_format($denda, 0, ',', '.') . '.'
-            : "Buku \"{$detail['judul']}\" berhasil dikembalikan tanpa denda.";
-
-        return redirect()->to('/peminjaman')->with('message', $pesan);
-    }
-
-    /**
-     * Proses pengembalian SEMUA item buku yang belum kembali
-     * dalam satu transaksi peminjaman sekaligus (dipakai jika
-     * anggota mengembalikan seluruh buku pinjamannya bersamaan).
-     *
-     * Input opsional: tanggal_kembali (default: hari ini).
-     */
-    public function kembalikanSemua($idPeminjaman = null)
-    {
-        $peminjaman = $this->peminjamanModel->find((int) $idPeminjaman);
-
-        if (! $peminjaman) {
-            return redirect()->to('/peminjaman')
-                ->with('error', 'Transaksi peminjaman tidak ditemukan.');
-        }
-
-        $items = array_filter(
-            $this->detailModel->getByPeminjaman((int) $idPeminjaman),
-            fn ($item) => empty($item['tanggal_kembali'])
-        );
-
-        if (empty($items)) {
-            return redirect()->to('/peminjaman')
-                ->with('error', 'Semua buku pada transaksi ini sudah dikembalikan.');
-        }
-
-        $tanggalKembali = trim((string) $this->request->getPost('tanggal_kembali'));
-        $tanggalKembali = $tanggalKembali !== '' ? $tanggalKembali : date('Y-m-d');
-
-        $db = \Config\Database::connect();
-        $db->transStart();
-
-        $totalDenda = 0.0;
-
-        foreach ($items as $item) {
-            $denda = $this->detailModel->hitungDenda($peminjaman['tanggal_jatuh_tempo'], $tanggalKembali);
-            $totalDenda += $denda;
-
-            $this->detailModel->update($item['id_detail'], [
-                'tanggal_kembali' => $tanggalKembali,
-                'denda'           => $denda,
-            ]);
-
-            $this->bukuModel->where('id_buku', $item['id_buku'])
-                ->set('stok', 'stok + ' . (int) $item['jumlah'], false)
-                ->update();
-        }
-
-        $this->peminjamanModel->update($idPeminjaman, ['status' => 'selesai']);
-
-        $db->transComplete();
-
-        if ($db->transStatus() === false) {
-            return redirect()->to('/peminjaman')
-                ->with('error', 'Proses pengembalian gagal, silakan coba lagi.');
-        }
-
-        $pesan = $totalDenda > 0
-            ? 'Seluruh buku berhasil dikembalikan. Total denda: Rp ' . number_format($totalDenda, 0, ',', '.') . '.'
-            : 'Seluruh buku berhasil dikembalikan tanpa denda.';
-
-        return redirect()->to('/peminjaman')->with('message', $pesan);
-    }
 }
-
