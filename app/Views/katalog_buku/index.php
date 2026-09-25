@@ -111,7 +111,8 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label for="kode_buku" class="form-label">Kode Buku</label>
-                            <input type="text" class="form-control" id="kode_buku" name="kode_buku" required maxlength="20">
+                            <input type="text" class="form-control" id="kode_buku" name="kode_buku" maxlength="20" placeholder="Kosongkan untuk otomatis">
+                            <div class="form-text" id="kode_buku_help">Kosongkan agar kode dibuat otomatis (mis. BK004).</div>
                         </div>
                         <div class="col-md-8">
                             <label for="judul" class="form-label">Judul</label>
@@ -164,11 +165,13 @@
         document.getElementById('modalBukuTitle').innerText = 'Tambah Buku';
         document.getElementById('formBuku').action = baseUrlKatalogBuku + '/store';
         document.getElementById('formBuku').reset();
+        document.getElementById('kode_buku_help').textContent = 'Kosongkan agar kode dibuat otomatis (mis. BK004).';
     }
 
     function bukaModalEdit(buku) {
         document.getElementById('modalBukuTitle').innerText = 'Edit Buku';
         document.getElementById('formBuku').action = baseUrlKatalogBuku + '/update/' + buku.id_buku;
+        document.getElementById('kode_buku_help').textContent = 'Kosongkan untuk tetap memakai kode lama.';
         document.getElementById('kode_buku').value    = buku.kode_buku;
         document.getElementById('judul').value        = buku.judul;
         document.getElementById('penulis').value      = buku.penulis;

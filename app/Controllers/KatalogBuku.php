@@ -39,6 +39,13 @@ class KatalogBuku extends BaseController
     {
         $payload = $this->buildPayload();
 
+        // Kode buku boleh dikosongkan di form; kalau kosong, generate
+        // otomatis DULU sebelum divalidasi, supaya tetap lolos aturan
+        // 'required' & 'is_unique' pada BukuModel seperti biasa.
+        if ($payload['kode_buku'] === '') {
+            $payload['kode_buku'] = $this->bukuModel->generateKodeBuku();
+        }
+
         if (! $this->bukuModel->validate($payload)) {
             return redirect()->to('/katalog-buku')
                 ->withInput()
@@ -60,8 +67,16 @@ class KatalogBuku extends BaseController
                 ->with('error', 'Data buku tidak ditemukan.');
         }
 
-        $payload                = $this->buildPayload();
-        $payload['id_buku']     = $id;
+        $payload = $this->buildPayload();
+
+        // Kalau field kode buku dikosongkan saat edit, pertahankan kode
+        // yang lama (tidak digenerate ulang) supaya kode buku yang sudah
+        // beredar di sirkulasi tidak berubah tanpa sengaja.
+        if ($payload['kode_buku'] === '') {
+            $payload['kode_buku'] = $buku['kode_buku'];
+        }
+
+        $payload['id_buku'] = $id;
 
         if (! $this->bukuModel->validate($payload)) {
             return redirect()->to('/katalog-buku')

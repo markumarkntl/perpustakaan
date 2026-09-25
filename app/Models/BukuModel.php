@@ -83,4 +83,70 @@ class BukuModel extends Model
             ->where('id_buku', $idBuku)
             ->countAllResults();
     }
+
+    /**
+     * Buat kode buku otomatis dengan pola "BK" + nomor urut 3 digit
+     * (BK001, BK002, dst), dipakai saat form tambah buku kode-nya
+     * dikosongkan. Nomor urut diambil dari kode ber-pola "BK###" yang
+     * sudah ada (bukan dari id_buku), lalu dicek ulang ke database
+     * supaya tidak bentrok kalau ada kode custom yang kebetulan sama.
+     */
+    public function generateKodeBuku(): string
+    {
+        $prefix = 'BK';
+
+        $row = $this->select("MAX(CAST(SUBSTRING(kode_buku, 3) AS UNSIGNED)) AS urut_terakhir")
+            ->like('kode_buku', $prefix, 'after')
+            ->first();
+
+        $urutBerikutnya = ((int) ($row['urut_terakhir'] ?? 0)) + 1;
+
+        do {
+            $kandidat = $prefix . str_pad((string) $urutBerikutnya, 3, '0', STR_PAD_LEFT);
+            $sudahDipakai = $this->where('kode_buku', $kandidat)->countAllResults() > 0;
+            $urutBerikutnya++;
+        } while ($sudahDipakai);
+
+        return $kandidat;
+    }
+
+    /**
+     * Kurangi stok buku sebanyak $jumlah (dipakai saat peminjaman).
+     *
+     * PENTING: query ini memakai ekspresi SQL mentah ('stok - x') agar
+     * pengurangan stok atomik di level database. Karena kolom `stok`
+     * punya validation rule `is_natural`, Model::update() akan mencoba
+     * memvalidasi STRING ekspresi itu (bukan hasil akhirnya) dan SELALU
+     * gagal (silent, tanpa exception) jika validasi dibiarkan aktif.
+     * Makanya validasi wajib dimatikan khusus untuk query ini dengan
+     * skipValidation(true) — bukan dimatikan secara global di $skipValidation.
+     */
+    public function kurangiStok(int $idBuku, int $jumlah): bool
+    {
+        if ($jumlah <= 0) {
+            return false;
+        }
+
+        return $this->skipValidation(true)
+            ->where('id_buku', $idBuku)
+            ->where('stok >=', $jumlah) // jaga-jaga: cegah stok jadi minus akibat race condition
+            ->set('stok', 'stok - ' . $jumlah, false)
+            ->update();
+    }
+
+    /**
+     * Tambah stok buku sebanyak $jumlah (dipakai saat pengembalian).
+     * Lihat catatan pada kurangiStok() soal alasan skipValidation(true).
+     */
+    public function tambahStok(int $idBuku, int $jumlah): bool
+    {
+        if ($jumlah <= 0) {
+            return false;
+        }
+
+        return $this->skipValidation(true)
+            ->where('id_buku', $idBuku)
+            ->set('stok', 'stok + ' . $jumlah, false)
+            ->update();
+    }
 }

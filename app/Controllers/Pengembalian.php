@@ -87,9 +87,7 @@ class Pengembalian extends BaseController
         ]);
 
         // Kembalikan stok buku sesuai jumlah yang dipinjam pada item ini.
-        $this->bukuModel->where('id_buku', $detail['id_buku'])
-            ->set('stok', 'stok + ' . (int) $detail['jumlah'], false)
-            ->update();
+        $this->bukuModel->tambahStok((int) $detail['id_buku'], (int) $detail['jumlah']);
 
         // Jika seluruh item pada transaksi ini sudah kembali, tutup transaksinya.
         if ($this->peminjamanModel->semuaDetailSudahKembali((int) $detail['id_peminjaman'])) {
@@ -150,9 +148,7 @@ class Pengembalian extends BaseController
                 'denda'           => $denda,
             ]);
 
-            $this->bukuModel->where('id_buku', $item['id_buku'])
-                ->set('stok', 'stok + ' . (int) $item['jumlah'], false)
-                ->update();
+            $this->bukuModel->tambahStok((int) $item['id_buku'], (int) $item['jumlah']);
         }
 
         $this->peminjamanModel->update($idPeminjaman, ['status' => 'selesai']);

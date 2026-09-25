@@ -88,15 +88,8 @@ class Peminjaman extends BaseController
         $idBukuList = (array) $this->request->getPost('id_buku');
         $jumlahList = (array) $this->request->getPost('jumlah');
 
-        // DEBUG: lihat persis apa yang dikirim browser.
-        log_message('debug', 'Peminjaman::store() RAW id_buku[] = ' . json_encode($idBukuList));
-        log_message('debug', 'Peminjaman::store() RAW jumlah[]  = ' . json_encode($jumlahList));
-
         // Rapikan input: buang baris kosong, gabungkan buku yang sama.
         $items = $this->rapikanItemBuku($idBukuList, $jumlahList);
-
-        // DEBUG: lihat hasil setelah dirapikan (ini yang benar-benar akan diproses).
-        log_message('debug', 'Peminjaman::store() items setelah dirapikan = ' . json_encode($items));
 
         if (empty($items)) {
             return redirect()->to('/peminjaman')
@@ -126,18 +119,20 @@ class Peminjaman extends BaseController
             ]);
 
             // Kurangi stok buku sesuai jumlah yang dipinjam.
-            $this->bukuModel->where('id_buku', $item['id_buku'])
-                ->set('stok', 'stok - ' . $item['jumlah'], false)
-                ->update();
+            // Jika gagal (mis. stok berubah/habis sesaat sebelum query ini
+            // jalan), batalkan seluruh transaksi lewat transStatus.
+            $berhasilKurangiStok = $this->bukuModel->kurangiStok((int) $item['id_buku'], (int) $item['jumlah']);
 
-            // DEBUG: konfirmasi query pengurangan stok benar-benar jalan.
-            log_message('debug', "Peminjaman::store() stok id_buku={$item['id_buku']} dikurangi {$item['jumlah']}, DB error: " . json_encode($this->bukuModel->db->error()));
+            if (! $berhasilKurangiStok) {
+                $db->transRollback();
+
+                return redirect()->to('/peminjaman')
+                    ->withInput()
+                    ->with('error', 'Stok salah satu buku berubah/tidak mencukupi saat transaksi diproses, silakan coba lagi.');
+            }
         }
 
         $db->transComplete();
-
-        // DEBUG: status akhir transaksi.
-        log_message('debug', 'Peminjaman::store() transStatus = ' . json_encode($db->transStatus()) . ', idPeminjaman = ' . $idPeminjaman);
 
         if ($db->transStatus() === false) {
             return redirect()->to('/peminjaman')
